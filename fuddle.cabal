@@ -1,0 +1,172 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           fuddle
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/hugdro/fuddle#readme>
+homepage:       https://github.com/hugdro/fuddle#readme
+bug-reports:    https://github.com/hugdro/fuddle/issues
+author:         Hugo DesRosiers
+maintainer:     hugo.desrosiers@boardingcities.com
+copyright:      None.
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/hugdro/fuddle
+
+library
+  exposed-modules:
+      Commands
+      Commands.Help
+      Commands.Version
+      DB.Connect
+      DB.Opers
+      Fuddle.Compiler.Base.Core
+      Fuddle.Compiler.Base.Diag
+      Fuddle.Compiler.Base.Range
+      Fuddle.Compiler.Parse.Front
+      Fuddle.Compiler.Parse.Internal.Combinator
+      Fuddle.Compiler.Parse.Internal.Decl
+      Fuddle.Compiler.Parse.Internal.Expr
+      Fuddle.Compiler.Parse.Internal.Foreign
+      Fuddle.Compiler.Parse.Internal.Markup
+      Fuddle.Compiler.Parse.Internal.Module
+      Fuddle.Compiler.Parse.Internal.Pattern
+      Fuddle.Compiler.Parse.Internal.Recover
+      Fuddle.Compiler.Parse.Internal.State
+      Fuddle.Compiler.Parse.Internal.Type
+      Fuddle.Compiler.Parse.Layout
+      Fuddle.Compiler.Parse.Lex
+      Fuddle.Compiler.Source.Buffer
+      Fuddle.Compiler.Source.Edit
+      Fuddle.Compiler.Source.Internal.Rope
+      Fuddle.Compiler.Source.Internal.Utf8
+      Fuddle.Compiler.Source.LineIndex
+      Fuddle.Compiler.Syntax.AstClass
+      Fuddle.Compiler.Syntax.Build
+      Fuddle.Compiler.Syntax.Event
+      Fuddle.Compiler.Syntax.Green
+      Fuddle.Compiler.Syntax.Internal.Generated
+      Fuddle.Compiler.Syntax.Internal.Hash
+      Fuddle.Compiler.Syntax.Internal.Index
+      Fuddle.Compiler.Syntax.Kind
+      Fuddle.Compiler.Syntax.Red
+      Fuddle.Compiler.Syntax.Serialize
+      Fuddle.Compiler.Syntax.Token
+      HttpSup.CorsPolicy
+      MainLogic
+      Options
+      Options.Cli
+      Options.ConfFile
+      Options.Runtime
+  other-modules:
+      Paths_fuddle
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
+      OverloadedRecordDot
+  ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , gitrev
+    , hasql
+    , hasql-pool
+    , hasql-th
+    , megaparsec
+    , mtl
+    , optparse-applicative
+    , postgresql-binary
+    , text
+    , time
+    , unix
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+executable fuddle
+  main-is: Main.hs
+  other-modules:
+      Paths_fuddle
+  hs-source-dirs:
+      app
+  default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
+      OverloadedRecordDot
+  ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , fuddle
+    , gitrev
+    , hasql
+    , hasql-pool
+    , hasql-th
+    , megaparsec
+    , mtl
+    , optparse-applicative
+    , postgresql-binary
+    , text
+    , time
+    , unix
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+test-suite fuddle-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_fuddle
+  hs-source-dirs:
+      test
+  default-extensions:
+      OverloadedStrings
+      DuplicateRecordFields
+      OverloadedRecordDot
+  ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , fuddle
+    , gitrev
+    , hasql
+    , hasql-pool
+    , hasql-th
+    , megaparsec
+    , mtl
+    , optparse-applicative
+    , postgresql-binary
+    , text
+    , time
+    , unix
+    , vector
+    , yaml
+  default-language: Haskell2010

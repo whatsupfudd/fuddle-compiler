@@ -1,0 +1,92 @@
+name:                fuddle
+version:             0.1.0.0
+github:              "hugdro/fuddle"
+license:             BSD3
+author:              "Hugo DesRosiers"
+maintainer:          "hugo.desrosiers@boardingcities.com"
+copyright:           "None."
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            software.
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/hugdro/fuddle#readme>
+
+dependencies:
+  - aeson
+  - base >= 4.7 && < 5
+  - bytestring
+  - binary
+  - directory
+  - text
+  - time
+  - vector
+  - containers
+  # For YAML (config file):
+  - yaml
+  - directory
+  - filepath
+  # For Git (version):
+  - gitrev
+  # For options:
+  - optparse-applicative
+  - unix
+  # For Cont(T):
+  - mtl
+  # For SQL:
+  - postgresql-binary
+  - hasql
+  - hasql-th
+  - hasql-pool
+  # For parsing:
+  - megaparsec
+
+
+default-extensions:
+- OverloadedStrings
+- DuplicateRecordFields
+- OverloadedRecordDot
+
+ghc-options:
+# - -Wall
+# - -Wunused-matches
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+#- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  fuddle:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fuddle
+
+tests:
+  fuddle-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fuddle
