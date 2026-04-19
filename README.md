@@ -29,15 +29,23 @@ It includes:
 * effect annotations,
 * `do` blocks,
 * `catch` on `do`,
-* `region`, `anchor`, `cell`, `native`, `thread`,
+* `region` for client/server specialisation,
+* `anchor`, `cell` for interaction binding,
+* `native` invocation for EW dynamic library access,
+* `thread` for distributed execution (in-page, in-browser, remote),
 * HTML `@anchor` syntax.
+
+It will include:
+* embedded Javascript code blocks,
+* Fuddle export to Javascript,
+* specialized template structure.
+
 
 It does **not** include:
 
 * legacy Elm ports,
 * kernel/native JavaScript constructs,
 * user-defined infix declarations,
-* parser support for arbitrary custom syntax extensions beyond those listed here.
 
 Those may be added later, but they are out of scope for the first compiler implementation of the new Fuddle features.
 
