@@ -14,9 +14,11 @@ import Control.Applicative ((<|>), many, some)
 
 import Text.Megaparsec (try)
 
-import Fuddle.Compiler.Parse.Internal.Combinator (emitTok, expectTok, matchTok, withNode)
+import Fuddle.Compiler.Parse.Internal.Combinator (
+    acceptTok, emitTok, expectTok, matchTok, withNode
+  )
 import Fuddle.Compiler.Parse.Internal.Pattern (patternP)
-import Fuddle.Compiler.Parse.Internal.State (Parser (..), peekTokMay)
+import Fuddle.Compiler.Parse.Internal.State (Parser (..), peekTokMay, softFail, tryP)
 import Fuddle.Compiler.Parse.Internal.Type (typeP)
 import Fuddle.Compiler.Syntax.Kind (SyntaxKind(..))
 import Fuddle.Compiler.Syntax.Token (TokenLex(..))
@@ -74,10 +76,10 @@ lambdaExprP =
     exprP
 
 binaryExprP :: Parser ()
-binaryExprP = try consExprP <|> try opExprP <|> applyExprP
+binaryExprP = tryP consExprP <|> tryP opExprP <|> applyExprP
 
 applyExprP :: Parser ()
-applyExprP = try applyChainP <|> anchoredExprP
+applyExprP = tryP applyChainP <|> anchoredExprP
 
 branchCaseP :: Parser ()
 branchCaseP =
@@ -87,7 +89,7 @@ branchCaseP =
     exprP
 
 declLetP :: Parser ()
-declLetP = try sigLetP <|> bindLetP
+declLetP = sigLetP <|> bindLetP
 
 sigLetP :: Parser ()
 sigLetP =
@@ -109,7 +111,7 @@ stmtDoP = do
   kdMay <- peekKdMay
   case kdMay of
     Just LetKwTk -> letDoP
-    _ -> try bindDoP <|> plainDoP
+    _ -> tryP bindDoP <|> plainDoP
 
 letDoP :: Parser ()
 letDoP =
@@ -167,7 +169,7 @@ opExprP =
     pure ()
 
 opExprTailP :: Parser ()
-opExprTailP = try opExprP <|> applyExprP
+opExprTailP = tryP opExprP <|> applyExprP
 
 applyChainP :: Parser ()
 applyChainP =
@@ -177,7 +179,7 @@ applyChainP =
     pure ()
 
 anchoredExprP :: Parser ()
-anchoredExprP = try exprMarkupP <|> postfixExprP
+anchoredExprP = tryP exprMarkupP <|> postfixExprP
 
 exprMarkupP :: Parser ()
 exprMarkupP =
@@ -191,10 +193,10 @@ exprMarkupP =
 
 
 anchorMarkupArgP :: Parser ()
-anchorMarkupArgP = try parenExprP <|> nameExprP
+anchorMarkupArgP = tryP parenExprP <|> nameExprP
 
 postfixExprP :: Parser ()
-postfixExprP = try accessExprP <|> atomExprP
+postfixExprP = tryP accessExprP <|> atomExprP
 
 accessExprP :: Parser ()
 accessExprP =
@@ -292,8 +294,26 @@ accessorExprP =
     expectTok DotTk
     void $ expectTok LowerNameTk
 
+
 parenLikeExprP :: Parser ()
-parenLikeExprP = try unitExprP <|> try tupleExprP <|> parenExprP
+parenLikeExprP = 
+  -- try unitExprP <|> try tupleExprP <|> parenExprP
+  withNode ParenExprNd $ do
+    expectTok LParenTk
+    hasClose <- matchTok RParenTk
+    if hasClose
+      then pure ()  -- unit
+      else do
+        exprP
+        hasComma <- matchTok CommaTk
+        if hasComma
+          then do
+            exprP
+            tupleTailP
+            void $ expectTok RParenTk
+          else do
+            void $ expectTok RParenTk
+
 
 unitExprP :: Parser ()
 unitExprP =
@@ -336,7 +356,7 @@ listExprP =
       void $ expectTok RBracketTk
 
 recordExprP :: Parser ()
-recordExprP = try recordUpdateExprP <|> recordExprPlainP
+recordExprP = recordUpdateExprP <|> recordExprPlainP
 
 recordExprPlainP :: Parser ()
 recordExprPlainP =
@@ -351,9 +371,9 @@ recordExprPlainP =
 recordUpdateExprP :: Parser ()
 recordUpdateExprP =
   withNode UpdateRecordExprNd $ do
-    expectTok LBraceTk
-    lowerQNameP
-    expectTok PipeTk
+    acceptTok LBraceTk
+    lowerQNameSpecP
+    acceptTok PipeTk
     fieldRecordP
     commaManyP fieldRecordP
     void $ expectTok RBraceTk
@@ -375,6 +395,30 @@ lowerQNameP = do
       expectTok DotTk
       lowerQNameTailP
     _ -> void $ expectTok LowerNameTk
+
+
+lowerQNameSpecP :: Parser ()
+lowerQNameSpecP = do
+  kdMay <- peekKdMay
+  case kdMay of
+    Just LowerNameTk -> acceptTok LowerNameTk
+    Just UpperNameTk -> do
+      acceptTok UpperNameTk
+      acceptTok DotTk
+      lowerQNameTailSpecP
+    _ -> softFail
+
+lowerQNameTailSpecP :: Parser ()
+lowerQNameTailSpecP = do
+  kdMay <- peekKdMay
+  case kdMay of
+    Just UpperNameTk -> do
+      acceptTok UpperNameTk
+      acceptTok DotTk
+      lowerQNameTailSpecP
+    Just LowerNameTk ->
+      acceptTok LowerNameTk
+    _ -> softFail
 
 lowerQNameTailP :: Parser ()
 lowerQNameTailP = do

@@ -1,6 +1,9 @@
 module Fuddle.Compiler.Parse.Internal.Combinator
   ( expectTok
   , matchTok
+  , acceptTok
+  , acceptTokMaybe
+  , acceptWhen
   , startNd
   , finishNd
   , emitTok
@@ -10,9 +13,11 @@ module Fuddle.Compiler.Parse.Internal.Combinator
   ) where
 
 import Control.Monad.State.Strict (modify')
+
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Vector as V
+
 import Fuddle.Compiler.Base.Diag
   ( CodeDiag(..)
   , Diag(..)
@@ -27,6 +32,7 @@ import Fuddle.Compiler.Parse.Internal.State
   , bumpTok
   , markErr
   , peekTokMay
+  , softFail
   )
 import Fuddle.Compiler.Syntax.Event (ParseEvent(..))
 import Fuddle.Compiler.Syntax.Kind
@@ -60,6 +66,39 @@ matchTok kd
       case tokMay of
         Just (_, tok) | tok.kindTL == kd -> emitTok
         _ -> pure False
+
+
+acceptTok :: SyntaxKind -> Parser ()
+acceptTok kd
+  | not (isTokenKd kd) = bugCombinator ("acceptTok: expected token kind, got " <> show kd)
+  | otherwise = do
+      tokMay <- peekTokMay
+      case tokMay of
+        Just (_, tok) | tok.kindTL == kd -> do
+          _ <- emitTok
+          pure ()
+        _ ->
+          softFail
+
+acceptTokMaybe :: SyntaxKind -> Parser Bool
+acceptTokMaybe kd
+  | not (isTokenKd kd) = bugCombinator ("acceptTokMaybe: expected token kind, got " <> show kd)
+  | otherwise = do
+      tokMay <- peekTokMay
+      case tokMay of
+        Just (_, tok) | tok.kindTL == kd -> emitTok
+        _ -> pure False
+
+
+acceptWhen :: (TokenLex -> Bool) -> Parser ()
+acceptWhen p = do
+  tokMay <- peekTokMay
+  case tokMay of
+    Just (_, tok) | p tok -> do
+      _ <- emitTok
+      pure ()
+    _ -> softFail
+
 
 startNd :: SyntaxKind -> Parser ()
 startNd kd

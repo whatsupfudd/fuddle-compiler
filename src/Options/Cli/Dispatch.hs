@@ -16,7 +16,7 @@ import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Options.Cli.Types
   ( CheckOptions(..)
   , CleanOptions(..)
-  , Cli(..)
+  , CliArgs(..)
   , Command(..)
   , DepsCommand(..)
   , DevOptions(..)
@@ -91,13 +91,13 @@ data CliHandlers m a = CliHandlers
 -- Public entry points
 --------------------------------------------------------------------------------
 
-normalizeCli :: Cli -> Either [DispatchError] Cli
+normalizeCli :: CliArgs -> Either [DispatchError] CliArgs
 normalizeCli cli =
   let
     (globalsNorm, globalsErrs) = normalizeGlobals cli.globals
     (commandNorm, commandErrs) = normalizeCommand cli.command
     errs = globalsErrs <> commandErrs
-    cliNorm = Cli { globals = globalsNorm, command = commandNorm }
+    cliNorm = CliArgs { globals = globalsNorm, command = commandNorm }
   in
   if null errs then 
     Right cliNorm
@@ -105,7 +105,7 @@ normalizeCli cli =
     Left errs
 
 
-dispatchCli :: CliHandlers m a -> Cli -> Either [DispatchError] (m a)
+dispatchCli :: CliHandlers m a -> CliArgs -> Either [DispatchError] (m a)
 dispatchCli handlers cli = do
   cliNorm <- normalizeCli cli
   pure $ case cliNorm.command of

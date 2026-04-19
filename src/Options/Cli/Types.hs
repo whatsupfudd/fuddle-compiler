@@ -1,7 +1,7 @@
 module Options.Cli.Types where
 
-data Cli = Cli
-  { globals :: GlobalOptions
+data CliArgs = CliArgs { 
+    globals :: GlobalOptions
   , command :: Command
   }
   deriving (Eq, Show)

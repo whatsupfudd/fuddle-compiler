@@ -8,16 +8,15 @@ module Fuddle.Compiler.Parse.Internal.Decl
   , fixityDeclP
   ) where
 
-import Control.Monad (void)
+import Control.Monad (void, when)
 import Control.Applicative ((<|>))
-import Text.Megaparsec (lookAhead)
 
 import Fuddle.Compiler.Parse.Internal.Combinator (expectTok, matchTok, withNode)
 import Fuddle.Compiler.Parse.Internal.Expr (exprP)
 import Fuddle.Compiler.Parse.Internal.Foreign (foreignBlockP, foreignExprP)
 import Fuddle.Compiler.Parse.Internal.Pattern (patternP)
 import Fuddle.Compiler.Parse.Internal.Recover (recoverUntil, topAnchors, withRecover)
-import Fuddle.Compiler.Parse.Internal.State (Parser, peekTokMay)
+import Fuddle.Compiler.Parse.Internal.State (Parser, peekTokMay, lookAheadP)
 import Fuddle.Compiler.Parse.Internal.Type (typeP, typeRowP)
 import Fuddle.Compiler.Syntax.Kind
 import Fuddle.Compiler.Syntax.Token (TokenLex(..))
@@ -228,27 +227,26 @@ refUpperP = do
 refUpperTailP :: Parser ()
 refUpperTailP = do
   dotHas <- matchTok DotTk
-  if dotHas
-    then do
-      expectTok UpperNameTk
-      refUpperTailP
-    else pure ()
+  when dotHas $ do
+    expectTok UpperNameTk
+    refUpperTailP
+
 
 aliasHeadP :: Parser Bool
 aliasHeadP =
-  lookAhead $ do
+  lookAheadP $ do
     typeHas <- matchTok TypeKwTk
     if typeHas then matchTok AliasKwTk else pure False
 
 valueSigHeadP :: Parser Bool
 valueSigHeadP =
-  lookAhead $ do
+  lookAheadP $ do
     nameHas <- matchTok LowerNameTk
     if nameHas then matchTok ColonTk else pure False
 
 threadSigHeadP :: Parser Bool
 threadSigHeadP =
-  lookAhead $ do
+  lookAheadP $ do
     threadHas <- matchTok ThreadKwTk
     if threadHas
       then do

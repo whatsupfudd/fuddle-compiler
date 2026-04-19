@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Fuddle.Compiler.Parse.Internal.State
   ( Parser
@@ -10,19 +10,62 @@ module Fuddle.Compiler.Parse.Internal.State
   , markErr
   , anchorPush
   , anchorPop
+  , lookAheadP
+  , softFail
+  , tryP
   ) where
 
-import Control.Monad.State.Strict (MonadState, State, get, modify', runState)
-
-import Control.Applicative (Alternative (..), (<|>))
+import Control.Applicative (Alternative(..), Alternative (..), (<|>))
+import Control.Monad (MonadPlus)
+import Control.Monad.State.Class (MonadState(..))
+import Control.Monad.State.Strict (StateT (..), get, modify', runState)
 
 import Fuddle.Compiler.Base.Diag (Diag)
 import Fuddle.Compiler.Syntax.Event (ParseEvent(..))
 import Fuddle.Compiler.Syntax.Kind (SyntaxKind)
 import Fuddle.Compiler.Syntax.Token (TokIx, TokenLex, TokenStream, lookupTok)
 
-newtype Parser a = Parser { unParser :: State StateParse a }
-  deriving newtype (Functor, Applicative, Monad, MonadState StateParse)
+data ResultP a =
+    OkP !a !StateParse
+  | SoftFailP
+
+
+newtype Parser a = Parser { unParser :: StateParse -> ResultP a }
+
+instance Functor Parser where
+  fmap f (Parser p) = Parser $ \st ->
+    case p st of
+      OkP a st' -> OkP (f a) st'
+      SoftFailP -> SoftFailP
+
+instance Applicative Parser where
+  pure a = Parser $ \st -> OkP a st
+  Parser pf <*> Parser pa = Parser $ \st ->
+    case pf st of
+      SoftFailP -> SoftFailP
+      OkP f st1 ->
+        case pa st1 of
+          SoftFailP -> SoftFailP
+          OkP a st2 -> OkP (f a) st2
+
+instance Monad Parser where
+  Parser pa >>= f = Parser $ \st ->
+    case pa st of
+      SoftFailP -> SoftFailP
+      OkP a st1 -> unParser (f a) st1
+
+
+instance Alternative Parser where
+  empty = Parser $ const SoftFailP
+  Parser p1 <|> Parser p2 = Parser $ \st ->
+    case p1 st of
+      SoftFailP -> p2 st
+      ok -> ok
+
+instance MonadPlus Parser
+instance MonadState StateParse Parser where
+  state f = Parser $ \st -> let (a, st') = f st in OkP a st'
+
 
 
 data StateParse = StateParse
@@ -35,8 +78,28 @@ data StateParse = StateParse
   }
   deriving stock (Eq, Show)
 
-runParser :: TokenStream -> Parser a -> (a, StateParse)
-runParser toks parser = runState parser.unParser (initState toks)
+runParserState :: StateParse -> Parser a -> ResultP a
+runParserState st p = unParser p st
+
+runParser :: TokenStream -> Parser a -> Maybe (a, StateParse)
+runParser toks p =
+  case unParser p (initState toks) of
+    OkP a st -> Just (a, st)
+    SoftFailP -> Nothing
+
+
+softFail :: Parser a
+softFail = empty
+
+tryP :: Parser a -> Parser a
+tryP = id
+
+lookAheadP :: Parser a -> Parser a
+lookAheadP (Parser p) = Parser $ \st ->
+  case p st of
+    SoftFailP -> SoftFailP
+    OkP a _ -> OkP a st
+
 
 peekTokMay :: Parser (Maybe (TokIx, TokenLex))
 peekTokMay = do
@@ -72,7 +135,7 @@ anchorPop = do
     [] -> pure Nothing
     anchor : rest -> do
       modify' $ \st0 -> st0 { anchorsSP = rest }
-      pure (Just anchor)
+      pure $ Just anchor
 
 initState :: TokenStream -> StateParse
 initState toks =

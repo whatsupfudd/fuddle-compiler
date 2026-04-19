@@ -20,13 +20,13 @@ import Options.Cli.Types
 -- Public entry points
 --------------------------------------------------------------------------------
 
-parseCliArgs :: [String] -> IO Cli
+parseCliArgs :: [String] -> IO (Either String CliArgs)
 parseCliArgs args = do
   argsExpanded <- expandResponseFilesIO args
-  OA.handleParseResult $
-    OA.execParserPure cliPrefs cliInfo argsExpanded
+  rezA <- OA.handleParseResult $ OA.execParserPure cliPrefs cliInfo argsExpanded
+  pure $ Right rezA
 
-cliInfo :: OA.ParserInfo Cli
+cliInfo :: OA.ParserInfo CliArgs
 cliInfo =
   OA.info (cliParser <**> OA.helper) ( 
          OA.fullDesc
@@ -41,14 +41,11 @@ cliPrefs = OA.prefs $ OA.showHelpOnEmpty <> OA.showHelpOnError
 -- Top-level parser
 --------------------------------------------------------------------------------
 
-cliParser :: OA.Parser Cli
-cliParser =
-  Cli
-    <$> globalOptionsParser
-    <*> ( versionFlagParser
-      <|> commandParser
-      <|> shorthandBuildParser
-        )
+cliParser :: OA.Parser CliArgs
+cliParser = CliArgs
+  <$> globalOptionsParser
+  <*> ( versionFlagParser <|> commandParser <|> shorthandBuildParser )
+
 
 versionFlagParser :: OA.Parser Command
 versionFlagParser =

@@ -26,8 +26,26 @@ source-repository head
 library
   exposed-modules:
       Commands
+      Commands.Build
+      Commands.Check
+      Commands.Clean
+      Commands.Completions
+      Commands.Deps
+      Commands.Dev
+      Commands.Doctor
+      Commands.Explain
+      Commands.Fmt
       Commands.Help
+      Commands.Init
+      Commands.Inspect
+      Commands.Metadata
+      Commands.Native
+      Commands.New
+      Commands.Preview
+      Commands.Repl
+      Commands.Test
       Commands.Version
+      Commands.Wapp
       DB.Connect
       DB.Opers
       Fuddle.Compiler.Base.Core
