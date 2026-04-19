@@ -16,7 +16,7 @@ This is a **surface-language specification**, not yet a formal static semantics 
 
 # 1. Scope of this definition
 
-This definition covers the **Fuddle surface language** used in this conversation.
+This definition covers the **Fuddle language** current spec (v260417).
 
 It includes:
 
