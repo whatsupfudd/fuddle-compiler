@@ -66,6 +66,9 @@ library
       MainLogic
       Options
       Options.Cli
+      Options.Cli.Base
+      Options.Cli.Dispatch
+      Options.Cli.Types
       Options.ConfFile
       Options.Runtime
   other-modules:
