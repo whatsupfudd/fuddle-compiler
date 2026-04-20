@@ -51,6 +51,29 @@ library
       Fuddle.Compiler.Base.Core
       Fuddle.Compiler.Base.Diag
       Fuddle.Compiler.Base.Range
+      Fuddle.Compiler.IfaceGraph
+      Fuddle.Compiler.IfaceGraph.Delta
+      Fuddle.Compiler.IfaceGraph.Export
+      Fuddle.Compiler.IfaceGraph.Invalidate
+      Fuddle.Compiler.IfaceGraph.Types
+      Fuddle.Compiler.IfaceGraph.Use
+      Fuddle.Compiler.IfaceGraph.Validate
+      Fuddle.Compiler.ModGraph
+      Fuddle.Compiler.ModGraph.Build
+      Fuddle.Compiler.ModGraph.Diff
+      Fuddle.Compiler.ModGraph.Discover
+      Fuddle.Compiler.ModGraph.GraphTypes
+      Fuddle.Compiler.ModGraph.Hash
+      Fuddle.Compiler.ModGraph.Header
+      Fuddle.Compiler.ModGraph.Interface
+      Fuddle.Compiler.ModGraph.Invalidate
+      Fuddle.Compiler.ModGraph.Name
+      Fuddle.Compiler.ModGraph.Origin
+      Fuddle.Compiler.ModGraph.Pretty
+      Fuddle.Compiler.ModGraph.Resolve
+      Fuddle.Compiler.ModGraph.Scc
+      Fuddle.Compiler.ModGraph.Types
+      Fuddle.Compiler.ModGraph.Validate
       Fuddle.Compiler.Parse.Front
       Fuddle.Compiler.Parse.Internal.Combinator
       Fuddle.Compiler.Parse.Internal.Decl

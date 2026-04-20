@@ -18,11 +18,15 @@ import qualified Data.Vector as V
 import Fuddle.Compiler.Base.Range (Range)
 
 data StageDiag =
+  -- CST construction:
     LexDG
   | LayoutDG
   | ParseDG
   | BuildDG
   | RedDG
+  -- Module Graph:
+  | ModuleGraphDG
+  | IfaceGraphDG
   deriving stock (Eq, Ord, Show)
 
 data SeverityDiag =
