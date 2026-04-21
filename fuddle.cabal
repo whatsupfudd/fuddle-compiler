@@ -87,6 +87,9 @@ library
       Fuddle.Compiler.Parse.Internal.Type
       Fuddle.Compiler.Parse.Layout
       Fuddle.Compiler.Parse.Lex
+      Fuddle.Compiler.Sem.CoreTypes
+      Fuddle.Compiler.Sem.TypedIR_Old
+      Fuddle.Compiler.Sem.Validate
       Fuddle.Compiler.Source.Buffer
       Fuddle.Compiler.Source.Edit
       Fuddle.Compiler.Source.Internal.Rope

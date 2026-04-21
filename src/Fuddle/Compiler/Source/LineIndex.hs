@@ -55,59 +55,60 @@ data BoundLC = BoundLC
 
 buildIndex :: ByteString -> LineIndex
 buildIndex src =
-  let !len = BS.length src
-      !_ = fromIntSize len
-      !linesRev = go len 0 0 0 [BoundLC (sizeAt 0) 0] []
-      !lines0 = V.fromList (reverse linesRev)
-      !starts0 = V.map (\line0 -> line0.startLI) lines0
+  let
+    !len = BS.length src
+    !linesRev = iterLine len 0 0 0 [BoundLC (sizeAt 0) 0] []
+    !lines0 = V.fromList (reverse linesRev)
+    !starts0 = V.map (\line0 -> line0.startLI) lines0
   in
-  LineIndex
-    { sizeLX = sizeAt len
+  LineIndex {
+      sizeLX = sizeAt len
     , startsLX = starts0
     , linesLX = lines0
     }
   where
-    go :: Int -> Int -> Int -> Int32 -> [BoundLC] -> [LineInfo] -> [LineInfo]
-    go !len !startIx !ix !colNow !boundsRev !acc
-      | ix >= len = finishLine startIx ix ix colNow boundsRev acc
-      | otherwise =
-          case BS.index src ix of
-            0x0D ->
-              let !nextIx =
-                    if ix + 1 < len && BS.index src (ix + 1) == 0x0A
-                      then ix + 2
-                      else ix + 1
-                  !acc1 = finishLine startIx ix nextIx colNow boundsRev acc
-              in
-              go len nextIx nextIx 0 [BoundLC (sizeAt nextIx) 0] acc1
-            0x0A ->
-              let !nextIx = ix + 1
-                  !acc1 = finishLine startIx ix nextIx colNow boundsRev acc
-              in
-              go len nextIx nextIx 0 [BoundLC (sizeAt nextIx) 0] acc1
-            _ ->
-              let (!charBytes, !charCols) = stepUtf8 src ix
-                  !ix1 = ix + charBytes
-                  !col1 = colNow + charCols
-                  !bound1 = BoundLC (sizeAt ix1) col1
-              in
-              go len startIx ix1 col1 (bound1 : boundsRev) acc
+  iterLine :: Int -> Int -> Int -> Int32 -> [BoundLC] -> [LineInfo] -> [LineInfo]
+  iterLine !len !startIx !ix !colNow !boundsRev !acc
+    | ix >= len = finishLine startIx ix ix colNow boundsRev acc
+    | otherwise =
+        case BS.index src ix of
+          0x0D ->
+            let !nextIx =
+                  if ix + 1 < len && BS.index src (ix + 1) == 0x0A
+                    then ix + 2
+                    else ix + 1
+                !acc1 = finishLine startIx ix nextIx colNow boundsRev acc
+            in
+            iterLine len nextIx nextIx 0 [BoundLC (sizeAt nextIx) 0] acc1
+          0x0A ->
+            let !nextIx = ix + 1
+                !acc1 = finishLine startIx ix nextIx colNow boundsRev acc
+            in
+            iterLine len nextIx nextIx 0 [BoundLC (sizeAt nextIx) 0] acc1
+          _ ->
+            let (!charBytes, !charCols) = stepUtf8 src ix
+                !ix1 = ix + charBytes
+                !col1 = colNow + charCols
+                !bound1 = BoundLC (sizeAt ix1) col1
+            in
+            iterLine len startIx ix1 col1 (bound1 : boundsRev) acc
 
-    finishLine :: Int -> Int -> Int -> Int32 -> [BoundLC] -> [LineInfo] -> [LineInfo]
-    finishLine !startIx !endContentIx !endLineIx !colNow !boundsRev !acc =
-      let !line0 =
-            LineInfo
-              { startLI = sizeAt startIx
-              , endContentLI = sizeAt endContentIx
-              , endLineLI = sizeAt endLineIx
-              , colEndLI = colNow
-              , boundsLI = V.fromList (reverse boundsRev)
-              }
-      in
-      line0 : acc
 
-    sizeAt :: Int -> TextSize
-    sizeAt n = TextSize (fromIntegral n)
+  finishLine :: Int -> Int -> Int -> Int32 -> [BoundLC] -> [LineInfo] -> [LineInfo]
+  finishLine !startIx !endContentIx !endLineIx !colNow !boundsRev !acc =
+    let
+      !line0 = LineInfo { 
+          startLI = sizeAt startIx
+        , endContentLI = sizeAt endContentIx
+        , endLineLI = sizeAt endLineIx
+        , colEndLI = colNow
+        , boundsLI = V.fromList (reverse boundsRev)
+        }
+    in
+    line0 : acc
+
+  sizeAt :: Int -> TextSize
+  sizeAt n = TextSize (fromIntegral n)
 
 locAt :: LineIndex -> TextSize -> LocSrc
 locAt index0 off0

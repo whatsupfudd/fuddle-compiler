@@ -1,5 +1,4 @@
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {- HLINT ignore "Use list comprehension" -}
 
 module Fuddle.Compiler.IfaceGraph

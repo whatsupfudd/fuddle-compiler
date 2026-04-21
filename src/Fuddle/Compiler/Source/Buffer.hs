@@ -34,8 +34,7 @@ data OriginSrc
 newtype VersionSrc = VersionSrc Word64
   deriving stock (Eq, Ord, Show)
 
-data Utf8Err
-  = InvalidUtf8UE !Text
+data Utf8Err = InvalidUtf8UE !Text
   deriving stock (Eq, Show)
 
 data BufferSrc = BufferSrc

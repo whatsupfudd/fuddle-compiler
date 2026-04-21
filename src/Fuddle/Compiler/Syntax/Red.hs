@@ -45,6 +45,7 @@ data TreeSyntax = TreeSyntax
   , toksTS :: !(Vector TokRec)
   , rootTS :: !NodeIxR
   }
+  deriving stock (Eq, Show)
 
 data NodeSyntax = NodeSyntax
   { treeNS :: !TreeSyntax
